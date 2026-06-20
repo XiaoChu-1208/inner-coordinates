@@ -1,0 +1,50 @@
+{
+  "app": "微信 / WeChat (Mac 4.x, Chromium 重写版)",
+  "bundleApp": "WeChat",
+  "process": "WeChat",
+  "_special": "微信是特例:内容防截屏(外部 screencapture/peekaboo 抓到的是空白) + 反自动化风控。所以纯键盘+少量点击,绝不截图、绝不拽窗口跨 Space、绝不 ScreenCaptureKit 轮询(那套会触发『为账号安全』强制登出,详见会话取证)。验证靠用户的全屏截图(用户自己截能看到微信内容)。",
+
+  "fingerprint": {
+    "bundleId": "com.tencent.xinWeChat",
+    "learnedVersion": "4.1.7",
+    "normalizeBounds": { "position": [100, 80], "size": [1200, 800] },
+    "actualPosition": [100, 80],
+    "actualSize": [1200, 800],
+    "displayScale": 2,
+    "_note": "归一化分两句 set position / set size。微信听话,实际=请求值。改版要重新对输入框坐标。"
+  },
+
+  "focus": {
+    "_critical": "光 `tell application \"WeChat\" to activate` 不灵(可能在别的 Space/抗激活)。必须:open -a WeChat + System Events set frontmost to true,再 assert 最前台==WeChat 才动键盘。",
+    "cmd": "open -a WeChat; osascript 'tell application \"System Events\" to tell process \"WeChat\" to set frontmost to true'"
+  },
+
+  "search": {
+    "_critical": "⌘F 热键经 peekaboo 投递不稳(没触发)。改用菜单点击必触发:",
+    "menu": "编辑 > 搜索  (System Events click menu item)",
+    "shortcutIfManual": "⌘F (人手动可用,自动化不稳)"
+  },
+
+  "coords_relative": {
+    "_note": "相对窗口原点(100,80)的逻辑偏移。点时=窗口position+偏移。",
+    "inputBox": [570, 734]
+  },
+
+  "send_flow": {
+    "_oneShot": "必须一个命令里连续跑完!搜索界面一旦微信失焦就缩回去,中途别让别的窗口抢焦点。",
+    "1_focus": "open -a + set frontmost + assert==WeChat",
+    "2_search": "菜单点 编辑>搜索",
+    "3_typeName": "中文走剪贴板: set clipboard + cmd,v (搜对方昵称)",
+    "4_openChat": "hotkey return 进会话",
+    "5_focusInput": "关键!peekaboo click inputBox —— 回车进会话后微信【不自动聚焦输入框】,必须点一下光标才进去",
+    "6_typeMsg": "set clipboard 消息 + cmd,v",
+    "7_send": "hotkey return 发送",
+    "8_verify": "我看不到微信 → 让用户截一张全屏图确认消息发出/收到"
+  },
+
+  "donts": [
+    "别 ScreenCaptureKit/peekaboo image 截微信(空白,且疑似触发风控)",
+    "别 --bring-to-current-space 拽窗口跨 Space(上次连带触发登出)",
+    "别直发:发不出去会卡在搜索/输入框,务必让用户截图核对"
+  ]
+}

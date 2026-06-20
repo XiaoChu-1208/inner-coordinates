@@ -1,0 +1,74 @@
+{
+  "app": "网易云音乐 / NetEase Music",
+  "bundleApp": "NeteaseMusic",
+  "process": "NeteaseMusic",
+  "_note": "实测跑通 (2026-06-19)。坐标是相对窗口左上角的偏移(逻辑点)；用时 = 窗口position + 偏移。先核指纹再用。",
+
+  "fingerprint": {
+    "bundleId": "com.netease.163music",
+    "learnedVersion": "3.0.11",
+    "_versionNote": "复用前用 lib/normalize.sh 核对 version；不一致=可能改版,点前更要自检,错了就重学该元素",
+    "normalizeBounds": { "position": [0, 25], "size": [1440, 900] },
+    "_normalizeHow": "分两句:set position to {0,25}；set size to {1440,900}。别写成 set {position,size} to {...4个数} 会失败",
+    "actualPosition": [0, 30],
+    "actualSize": [1440, 900],
+    "minWindowSize": [1056, 752],
+    "_minNote": "网易云有最小窗口尺寸,比这小会被它顶回去——所以归一化后必须回读实际几何当指纹。窗口被拉伸/挪动? 一句 set bounds 就弹回 (0,30)1440x900,缓存坐标全部复活。",
+    "displayScale": 2,
+    "screenLogical": [1920, 1080]
+  },
+
+  "controls_shortcuts": {
+    "_how": "首选:先 activate 网易云,再 peekaboo hotkey 发快捷键。比点菜单方便。注意:空格在搜索框聚焦时会打成空格,所以播放/暂停用空格前确保焦点不在输入框(点一下主区域或用菜单兜底)。",
+    "playPause": "space",
+    "next": "cmd,right",
+    "prev": "cmd,left",
+    "volumeUp": "cmd,up",
+    "volumeDown": "cmd,down",
+    "likeToggle": "cmd,l",
+    "lyricsToggle": "cmd,r"
+  },
+
+  "controls_via_menu": {
+    "_how": "兜底/验证:System Events 点「控制」菜单项,零坐标;首项名字=播放态(『播放』=已暂停,『暂停』=播放中),拿来验证最准",
+    "menuBarItem": "控制",
+    "playPauseToggle": "菜单项1 (播放/暂停 自动切换)",
+    "next": "下一个", "prev": "上一个", "volumeUp": "升高音量", "volumeDown": "降低音量", "loop": "循环播放", "shuffle": "随机播放"
+  },
+
+  "coords_relative": {
+    "_note": "相对窗口左上角(实际原点 0,30)的逻辑偏移。点时=窗口position+偏移。a11y 读不到内容时兜底用。",
+    "collapseNowPlaying": [75, 15],
+    "searchBox": [407, 49],
+    "tab_综合": [260, 152],
+    "tab_单曲": [316, 152],
+    "songRow1": [825, 267],
+    "sidebar_推荐": [90, 109],
+    "sidebar_精选": [90, 149],
+    "sidebar_播客": [90, 189],
+    "sidebar_漫游": [90, 229],
+    "sidebar_动态": [90, 269],
+    "sidebar_我喜欢的音乐": [90, 361],
+    "sidebar_最近播放": [90, 413],
+    "sidebar_下载管理": [90, 452]
+  },
+
+  "search_flow": {
+    "0_FOCUS_FIRST": "铁律:先 osascript 'tell application \"NeteaseMusic\" to activate' + sleep 0.4，否则键盘事件进不了网易云",
+    "1_collapseIfNeeded": "若停在黑胶详情页，先点 collapseNowPlaying 回主界面",
+    "2_clickSearch": "点 searchBox",
+    "3_clear": "hotkey cmd,a",
+    "4_type": "中文走剪贴板：set clipboard + hotkey cmd,v",
+    "5_enter": "hotkey return，然后 sleep ~2.2s 等结果渲染(太快点 tab 会落空)",
+    "6_songsTab": "点 tab_单曲 拿干净歌曲列表，sleep ~1.5s",
+    "7_verifyRow1": "截图确认第1行是目标曲目(标题/歌手对不对)",
+    "8_play": "双击 songRow1 (peekaboo click --double)",
+    "9_verify": "控制菜单首项变『暂停』=在放",
+    "_timing": "全程实测约 7s(<20s)。瓶颈是搜索结果渲染等待，不是坐标。"
+  },
+
+  "quirks": {
+    "peekaboo_image_see_menu": "本机 beta3 对本 App 报 bridge error 1 → 用 screencapture + System Events",
+    "peekaboo_click": "正常可用"
+  }
+}

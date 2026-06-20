@@ -1,0 +1,45 @@
+{
+  "_what": "screen-pilot 已学应用库的目录。每碰到一个 App 先查这里：有=按 profile 飞快交互(先 normalize 核指纹)；没有=问要不要开一次「睁眼学」，学完写进来。",
+  "learned": [
+    {
+      "process": "NeteaseMusic",
+      "bundleId": "com.netease.163music",
+      "learnedVersion": "3.0.11",
+      "profile": "neteasemusic.json",
+      "coverage": ["搜索并播放", "播放/暂停/上下首/音量(快捷键)", "我喜欢的音乐", "最近播放", "侧栏导航"],
+      "status": "实测跑通",
+      "lastVerified": "2026-06-19"
+    },
+    {
+      "process": "WeChat",
+      "bundleId": "com.tencent.xinWeChat",
+      "learnedVersion": "4.1.7",
+      "profile": "wechat.json",
+      "coverage": ["搜索联系人并发消息(纯键盘+点输入框)"],
+      "status": "实测跑通(特例:防截屏,验证靠用户截图)",
+      "lastVerified": "2026-06-19"
+    },
+    {
+      "process": "iPhone Mirroring",
+      "approach": "iPhone 镜像驱动 iOS 微信(绕开 Mac 微信防截屏+风控,全自动)",
+      "profile": "wechat-ios-mirror.json",
+      "coverage": ["搜联系人并发中文消息(全自动:cliclick真实Cmd+V粘贴+Return发送)"],
+      "status": "实测全自动跑通",
+      "needs": ["接力/Handoff 开", "cliclick", "iPhone 镜像已配好"],
+      "lastVerified": "2026-06-19"
+    },
+    {
+      "process": "iPhone Mirroring",
+      "approach": "iPhone 镜像驱动 iOS 美团外卖(全自动下单+支付)",
+      "profile": "meituan-waimai-ios-mirror.json",
+      "coverage": ["搜店进店", "选规格(份量/温度少冰/咖啡豆/奶/浓缩减份)", "加购+凑起送", "购物车删项", "结算用美团红包", "选餐具", "收银台选支付宝", "支付密码逐位点(脱敏)", "支付成功"],
+      "status": "实测全自动跑通(¥56 真实下单成功)",
+      "needs": ["接力/Handoff 开", "cliclick", "iPhone 镜像已配好", "支付密码用户给(不存)"],
+      "notes": "含整条链路『内心figma』全键位图。2026-06-20b 复盘:全链路到密码盘坐标已校准(见 profile『复盘_2026-06-20b』),可一次规划跑内心链路、不逐步截图。5大陷阱:商品详情页大图预览死胡同/改规格生成新变体要删车/红包不自动抵扣/餐具弹窗别点保存(触发引导浮层)/收银台默认月付要手切支付宝。铁律:别目测缩略图定坐标(偏30-60px),信网格或用已校准表。",
+      "lastVerified": "2026-06-20b"
+    }
+  ],
+  "candidates_常用待学": [
+    "备忘录/Notes", "浏览器(优先走 Playwright MCP,非必要不截图)", "Spotify/Apple Music"
+  ]
+}

@@ -1,0 +1,6 @@
+.DS_Store
+*_grid.png
+*_window.png
+/tmp/
+_gridraw*.png
+*.log
