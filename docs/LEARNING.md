@@ -23,6 +23,16 @@ Decide **native macOS window** vs **iPhone Mirroring** before touching anything:
 3. **Record the whole screen (inner figma)** — you already see the full screen for one button, so record *every* visible control's position, including the ones you didn't click: titles, tabs, list/category structure, other buttons. Mark each as **stable skeleton** (fixed position → blind-runnable) or **content-dependent** (moves with scroll/content → must look). The library compounds: profiles grow screen by screen.
 4. **Prefer the most robust trigger** per control: keyboard shortcut > menu-by-name > accessibility element > cached coordinate. Cache coordinates only for the immovable skeleton, never for changing content (a specific song, a specific message).
 
+## Emit a script — the real output of learning
+
+Notes in a profile are not enough to run a flow in one pass. A coordinate list leaves the *re-assembly* to the model, and a model re-assembling a chain falls back into "act, screenshot, act" — one tap and one screenshot per turn. That's why an agent keeps going step-by-step no matter how firmly the prose says "run it in one go": you can't reliably suppress that reflex with instructions.
+
+**So the durable output of a learning pass is a script, not just notes.** Package the stable chain into one `lib/<app>-<flow>.sh` — every click and wait inside it, Chinese text set via `pbcopy` then pasted with a real `cliclick` Cmd+V, and parameters for the variable bits (store, item, options). The agent runs that **one command** and the whole chain executes; there is physically no "between" to screenshot.
+
+- **When it drifts, fix the script, don't re-learn.** A coordinate moved? Change that one number in the script. Script-level self-heal is far faster than re-running a learning pass.
+- The profile still matters — it's the map, the pitfalls, and the source of the coordinates — but it's the *spec sheet*; the script is what runs.
+- See `lib/meituan-order.sh` (a parameterized full-chain order script) and `lib/meituan-search.sh` for examples.
+
 ## The inner chain (execution)
 
 Once learned:

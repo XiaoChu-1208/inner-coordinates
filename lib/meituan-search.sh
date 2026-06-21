@@ -28,7 +28,7 @@ act; sleep 0.2
 peekaboo click --coords "130,120" >/dev/null; sleep 0.6
 
 # 3) 剪贴板 + 接力同步 + 真实 Cmd+V(中文必须 cliclick,peekaboo/osascript 的 Cmd 会被镜像吃掉)
-osascript -e "set the clipboard to \"$Q\"" >/dev/null
+printf "%s" "$Q" | pbcopy
 sleep 2.8
 f="$(front)"
 if [ "$f" != "$PROC" ]; then echo "FOCUS_LOST: 最前台是 $f,不是镜像,中止" >&2; exit 2; fi
