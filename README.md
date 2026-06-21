@@ -75,6 +75,41 @@ normalize window (pin top-left, read back actual geometry = fingerprint)
 
 **Window convention:** the window is always **pinned to the top-left** (`set position {0,25}`, then read back the *actual* geometry — menu-bar / notch height is absorbed automatically). This shared convention is what makes coordinates **transferable between users and machines**.
 
+## Methodology — the inner figma, in practice
+
+Inner Coordinates matured from "record a linear script and replay it" into something closer to how you actually hold an app in your head: **a flowmap — a state graph of the app.**
+
+### The map: states and edges
+- **Node = a screen/state.** For each, record how to *recognize* it (its distinguishing features), the coordinates of its buttons, and which coords are stable vs content-dependent.
+- **Edge = a transition.** Tapping button X on screen A goes to screen B.
+
+With a flowmap you don't replay a recording — you **operate** the app:
+1. **Recognize** which state you're in (one screenshot).
+2. **Pathfind** from there to your target across the edges.
+3. **Execute** the edges from memory.
+4. **Recover** from a wrong turn: recognize the unexpected state, take its back-edge home.
+5. **Update** the map with anything new you see.
+
+See [`profiles/meituan-flowmap.json`](profiles/meituan-flowmap.json) for a worked example — a whole food-delivery app mapped as states + transitions, with off-path recovery, a grocery sub-graph, and the post-payment path back to home.
+
+### Learning fills the map — and a demo == self-exploration
+A demonstration you record and the agent exploring on its own **converge on the same map**; a recording is just data that populates it. Capture the human's *real clicks* with [`lib/record.py`](lib/record.py) instead of eyeballing — a label's text center is **not** its tap box (a temperature button's hit-box sat 35px left of its text). And **look at every frame**: each screen is a node, each transition an edge — there are no "noise" frames (we once missed the post-payment "return home" path by skimming a montage).
+
+### Run to completion; look only at the seams
+Once mapped, the default is **run to completion**, not tap-look-tap:
+- The one screenshot that's unavoidable is **entry localization** — which screen the app parked on. Reset to a known anchor, then run from memory to the end.
+- Screenshot only on a **surprise**: an action misfired, or a genuinely new screen. Predict where the new branches are (like a Figma where an `if` isn't drawn yet) and look *only* there.
+- On failure, **post-mortem**: find the break, convert that step to a constant or fix the one coordinate, then re-run to completion from the break. Never fall back to step-by-step.
+
+### A constant always beats a variable
+Convert drifting steps (a list's row positions, a first result that floats with a promo banner, a bottom-sheet that slides ±30px) into **fixed anchors** — an in-store search box, or the detected top edge of a modal that you offset from. Boldness on a variable just drifts; boldness belongs on the stable skeleton.
+
+### Capturing the mirror is itself an action
+Screenshotting the iPhone-Mirroring window — by **any** macOS method (a screen region, the full screen, or by window id) — is relayed to iOS as a phone screenshot, which can trigger app-side screenshot detection (e.g. a "share screenshot" sheet). That sheet is modal and **eats the next tap**. No capture trick avoids it. So: screenshot only at the start/end of a round; right after a start screenshot, make the first action dismiss the popup; then run blind (no mid-screenshots → no new popups).
+
+### Scripts are the executable artifact
+A coordinate list still leaves the model to re-assemble and tap-look-tap. The durable output of learning a stable stretch is a **single script** (`lib/<app>-<flow>.sh`) that runs the whole chain in one command — there is no "between" to screenshot. Fix the script when a coordinate drifts; don't re-learn. The password is the one thing **never** in a script or the repo: it's read from the local Keychain at the keypad (opt-in), and the agent asks before auto-paying.
+
 ## Quick start
 
 Requirements: macOS, [Homebrew](https://brew.sh), and an agent that can run shell + read screenshots (e.g. Claude Code). `setup.sh` installs the rest — [`peekaboo`](https://github.com/steipete/peekaboo) (clicks/swipes), [`cliclick`](https://github.com/BlueM/cliclick) (real modified-key paste), and Pillow (grid tool) — all via Homebrew/pip, nothing to download by hand. For the iPhone Mirroring channel: iPhone Mirroring set up **and Handoff / Universal Clipboard turned ON**.
@@ -171,6 +206,13 @@ MIT — see [LICENSE](LICENSE).
 - **学一次（睁眼，慢）**：归一化窗口 → 截图 → 把这一屏**所有可见控件**的位置都记下（连没点的也记，「内心 figma」）。
 - **跑内心链路（凭记忆，快）**：学好后，稳定骨架一口气连点不截图；**只在卡点截图**（算不出的内容相关步、或花钱的临门一脚）。
 - **自愈**：任一验证不符 = 地图过期 → 只重学那一处 → 更新 profile。
+
+**方法论(成熟形态：内心 figma = 一张 flowmap 状态图)**：
+- **节点=一个屏**(怎么认出它 + 它的按钮坐标 + 哪些稳/哪些浮)，**边=一个跳转**(点某键去哪个屏)。不再线性 replay 录制，而是**操作**这个图：认出当前在哪 → 在图上规划到目标的路径 → 凭记忆走边 → 误入岔路就走它的返回边退回 → 见到新东西就更新图。见 [`profiles/meituan-flowmap.json`](profiles/meituan-flowmap.json)。
+- **学=填图**：你示范(录制)和我自己探索**收敛到同一张图**；录制只是填图的数据。用 [`lib/record.py`](lib/record.py) 录你的**真实点击**(别目测——文字中心≠可点盒子)；**每一帧都仔细看**，没有"噪声帧"(漏过付款后回首页那条边就是只扫了缩略图)。
+- **进行到底**：唯一必截的是**开局定位**(App 停在哪屏)，复位到锚点后**一路跑到底**；只在**意外**(动作疑似失误 / 全新的屏)才截图；错了就**复盘**→把那步换常量/改脚本一个数→从断点再跑。**常量永远胜过变量**(浮动的列表/促销 banner → 换成搜索框/检测模态框顶边那种固定锚点)。
+- **截图本身是个动作**：截 iPhone 镜像窗口(任何方式)都会被 relay 成"截手机"，触发 App 的截屏检测弹窗，它**吃掉下一次点击**，没有截法能绕开 → 只在回合首尾截、截完第一下先关弹窗、中途零截图。
+- **脚本才是可执行产物**：稳定段落落成一条 `lib/<app>-<flow>.sh` 一条命令跑完(没有"中间"可截)；漂了改脚本不重学；密码只在钥匙串、绝不进脚本/仓库。
 
 两条渠道：**(A) 直接操控 Mac 原生窗口**；**(B) 经 iPhone 镜像操控 iOS App**。技能会判断走哪条，两条都行时让你拍板。
 
