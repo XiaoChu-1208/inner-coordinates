@@ -16,6 +16,22 @@ Decide **native macOS window** vs **iPhone Mirroring** before touching anything:
 - iPhone Mirroring if the Mac version is anti-screenshot / anti-automation (WeChat), the app is iOS-only or a mini-program (Meituan), or your account/data lives on the phone.
 - If both are viable, recommend one and let the user pick.
 
+## Best way to learn: record a demonstration (zero eyeballing)
+
+The most reliable way to learn an app is **not** for the agent to eyeball coordinates off a screenshot — that drifts (a label's text center is *not* its tappable box; we lost hours to a temperature button whose hit-box sat 35px left of its text). Instead, **you demonstrate the flow once and we record your real clicks.**
+
+```bash
+python3 lib/record.py "iPhone Mirroring" /tmp/ic-recording.json
+# do the flow yourself: click the real buttons, paste/type as normal
+# press ESC (or `touch /tmp/ic-stop`) to finish
+```
+
+`record.py` normalizes the window, then records every click as **window-relative coordinates** (exactly where you clicked — no estimation), plus a per-click screenshot and the clipboard contents at that moment (so pasted Chinese text is captured even though IME keystrokes aren't). It saves incrementally, so nothing is lost if interrupted. The agent then turns the recording into a replay script — and because the coordinates are *your* clicks, replay lands dead-on.
+
+Permissions: Accessibility (mouse), Input Monitoring (keyboard/ESC), Screen Recording (screenshots). If ESC doesn't stop it, grant Input Monitoring or use the `touch /tmp/ic-stop` fallback.
+
+Use the eyes-open pass below when you can't demonstrate (no human handy); use recording whenever you can — it's far more accurate.
+
 ## The eyes-open pass
 
 1. **Normalize** the window — pin it top-left, read back the actual geometry, store it as the `fingerprint`. This is what makes coordinates reproducible.
