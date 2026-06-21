@@ -37,9 +37,11 @@ def on_click(x, y, button, pressed):
     if not pressed: return
     rx, ry = round(x - wx), round(y - wy)
     i = sum(1 for e in events if e["type"] == "click")
-    events.append({"t": now(), "type": "click", "rel": [rx, ry],
-                   "screen": [round(x), round(y)], "clip": pbpaste()[:120], "shot": shot(i)})
-    save()                                            # 即时存盘
+    ev = {"t": now(), "type": "click", "rel": [rx, ry],
+          "screen": [round(x), round(y)], "clip": pbpaste()[:120], "shot": shot(i)}
+    events.append(ev); save()                         # 点前态即时存盘
+    time.sleep(0.35); ev["shot_after"] = shot(f"{i}a")  # 点后态:看清这一下选中/改变了啥(消歧义)
+    save()
     print(f"  #{i} click rel({rx},{ry})  clip='{pbpaste()[:20]}'", flush=True)
 
 buf = []
