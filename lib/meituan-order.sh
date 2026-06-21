@@ -21,8 +21,9 @@ A(){ osascript -e "tell application \"System Events\" to tell process \"$PROC\" 
 CK(){ A; peekaboo click --coords "$1" >/dev/null 2>&1; }
 CLEAR(){ A; cliclick kd:cmd t:a ku:cmd >/dev/null 2>&1; sleep 0.2; cliclick kp:delete >/dev/null 2>&1; sleep 0.2; }  # 输入前清空:Cmd+A 全选 + Delete
 PASTE(){ CLEAR; printf '%s' "$1" | pbcopy; sleep 2.6; A; cliclick kd:cmd t:v ku:cmd; }   # 先清空,再 pbcopy 中文 + 真实 Cmd+V
-case "$SIZE" in 大杯) SZ="200,300";; *) SZ="80,300";; esac
-case "$TEMP" in 热) TP="63,356";; 冰) TP="95,356";; 少冰) TP="145,356";; 去冰) TP="195,356";; *) TP="";; esac
+# 2026-06-21 校准实测坐标(温度按钮盒子在文字左~35px,y=368不是356;别瞄文字)
+case "$SIZE" in 大杯) SZ="230,307";; *) SZ="95,307";; esac
+case "$TEMP" in 热) TP="32,368";; 冰) TP="80,368";; 少冰) TP="129,368";; 去冰) TP="182,368";; *) TP="";; esac
 
 osascript -e "tell application \"System Events\" to tell process \"$PROC\" to set position of front window to {0,25}" >/dev/null 2>&1; sleep 0.4
 
@@ -43,7 +44,7 @@ CK "300,204"; sleep 1.8
 CK "$SZ"; sleep 0.4
 [ -n "$TP" ] && { CK "$TP"; sleep 0.4; }
 # 6) 加入购物车
-CK "265,604"; sleep 1.5
+CK "285,625"; sleep 1.5
 # 7) 去结算
 CK "279,741"; sleep 2.6
 peekaboo move --coords "330,90" >/dev/null 2>&1; sleep 0.3
