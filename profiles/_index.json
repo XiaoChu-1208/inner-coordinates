@@ -1,5 +1,6 @@
 {
   "_what": "screen-pilot 已学应用库的目录。每碰到一个 App 先查这里：有=按 profile 飞快交互(先 normalize 核指纹)；没有=问要不要开一次「睁眼学」，学完写进来。",
+  "_格式_flowmap优先": "★成熟形态是『flowmap 状态图』(节点=屏+识别+按钮,边=跳转),不是线性坐标表。优先读 *-flowmap.json:meituan-flowmap / wechat-flowmap / neteasemusic-flowmap。老的坐标 profile(meituan-waimai-ios-mirror / wechat-ios-mirror / neteasemusic)是 flowmap 的坐标来源/说明书,仍可查。用法见各 flowmap 顶部 _what + README 的 Methodology 节。",
   "learned": [
     {
       "process": "NeteaseMusic",

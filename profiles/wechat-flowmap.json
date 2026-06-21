@@ -1,0 +1,46 @@
+{
+  "_what": "微信(经 iPhone 镜像)的【状态流程图/内心figma】。节点=屏,边=按钮跳转。用法同 meituan-flowmap:截图认 state→图上规划路径→走边→岔路走返回边→更新图。坐标来自 wechat-ios-mirror.json 实测。",
+  "_why": "Mac 微信防截屏(截空白)+反自动化(风控登出)。走 iPhone 镜像:在普通 macOS 窗口里操控手机微信,screencapture 能截内容、peekaboo 能点,两道防线一起绕开。",
+  "fingerprint": { "actualPosition": [0, 30], "actualSize": [346, 760], "displayScale": 2, "device": "iPhone 14 Plus" },
+  "前提": { "Handoff必开": "Universal Clipboard 靠它把 Mac 剪贴板同步到 iOS;不开则镜像里粘贴是空的", "cliclick": "发带修饰键的真实 CGEvent;peekaboo/osascript 的 Cmd 会被镜像吃掉" },
+
+  "_铁律_focus_guard": "★每次键盘输入(cliclick paste/return)前,必须断言最前台进程==‘iPhone Mirroring’★,否则输入会漏进终端(被当 shell 命令执行!)。镜像焦点很娇气,导航点击后常掉焦→每步先 osascript set frontmost + 检查 name of first application process whose frontmost is true,不符就停手。",
+  "_导航通则": { "会话页返回键": [25, 129], "_返回坑": "聊天左上『‹』返回在 y=129,不是 y=58(那是状态栏)。坐标全靠截图实测,别凭感觉。", "回列表锚点": "会话页点返回(25,129)→微信列表页。" },
+  "_截屏弹窗_通用": "截 iPhone 镜像窗口(任何方式)都会被 relay 成『截手机屏』,可能触发 App 截屏检测弹窗(美团有『截屏分享』,会吃下一次点击)。微信暂未见同款,但同理:截图只在回合首尾,截完第一下先关任何弹窗,中途零截图。",
+
+  "states": {
+    "微信列表页": {
+      "recognize": "顶部『微信』标题 + 右上搜索放大镜/+号 + 会话列表 + 底栏(微信/通讯录/发现/我)",
+      "buttons": { "搜索框": [173, 158] },
+      "transitions": { "点搜索框": "搜索页", "点某会话行": "会话页" },
+      "_是锚点": "微信的规范起点。任何地方点返回(25,129)退回这里。"
+    },
+    "搜索页": {
+      "recognize": "顶部搜索输入框(光标) + 下方结果(联系人/群聊/聊天记录/功能)",
+      "buttons": { "输入框聚焦": "顶部搜索框", "第一个联系人结果": [110, 211] },
+      "transitions": { "粘名字→点第一条联系人(110,211)": "会话页" },
+      "_输入": "聚焦后先清空(cliclick kd:cmd t:a ku:cmd→kp:delete);中文 pbcopy 设剪贴板→等接力同步~2.8s→cliclick kd:cmd t:v ku:cmd(真实Cmd+V)。"
+    },
+    "会话页": {
+      "recognize": "顶部联系人名 + 左上返回‹ + 消息流 + 底部输入框 + 😊表情键 + ⊕号",
+      "buttons": { "返回": [25, 129], "输入框": [150, 732], "表情😊": [295, 739] },
+      "transitions": {
+        "发消息": "点输入框(150,732)聚焦→pbcopy中文→cliclick真Cmd+V→【连刷5~6次 cliclick kp:return w:100 ...】发出",
+        "点表情😊(295,739)": "表情贴纸面板",
+        "点返回(25,129)": "微信列表页"
+      },
+      "_发送坑_必背": "合成 Return 经镜像【偶尔才登记一次】(单发常没反应,未知bug)→必须连刷5~6次 return 才稳稳落地。【绝不用 Cmd+Return】(会把输入框顶成多行,return 变换行发不出)。消息保持短(≤2行),长了进多行模式连刷 return 也只换行→拆成多条短消息。",
+      "_一条命令发": "点输入框; cliclick kd:cmd t:a ku:cmd; cliclick kp:delete; pbcopy 中文; sleep 2.8(接力); cliclick kd:cmd t:v ku:cmd; sleep 0.9; cliclick kp:return w:100 kp:return w:100 kp:return w:100 kp:return w:100 kp:return"
+    },
+    "表情贴纸面板": {
+      "recognize": "底部铺开表情/贴纸网格;输入框被顶到上方",
+      "buttons": { "被顶上去的输入框": [160, 460], "键盘图标": [297, 460] },
+      "_坐标会变": "★面板开着时输入框在(160,460)、右边变键盘图标(297,460);这时点(150,732)会落在面板里误点贴纸!★",
+      "transitions": { "点任意贴纸格": "直接发出(收藏的表情包,不用再按发送)", "点被顶上去的输入框(160,460)": "收起面板→回会话页正常布局(输入框回732)" },
+      "_todo": "各贴纸格精确坐标+含义还没标全(用户回头教);发哪格先截图确认。"
+    }
+  },
+
+  "主路径_发消息": "微信列表页 →(点搜索框173,158)→ 搜索页 →(清空→粘名字→点第一条联系人110,211)→ 会话页 →(点输入框150,732聚焦→pbcopy中文→cliclick真Cmd+V→连刷5~6次return)→ 发出",
+  "_安全": "给外部真人发消息:只发用户【明确要求】的(如介绍技能);发完之后要继续对话,再问用户。见记忆 代回微信应答尽答。"
+}
