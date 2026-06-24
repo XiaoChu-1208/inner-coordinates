@@ -1,6 +1,7 @@
 {
   "_what": "screen-pilot 已学应用库的目录。每碰到一个 App 先查这里：有=按 profile 飞快交互(先 normalize 核指纹)；没有=问要不要开一次「睁眼学」，学完写进来。",
   "_格式_flowmap优先": "★成熟形态是『flowmap 状态图』(节点=屏+识别+按钮,边=跳转),不是线性坐标表。优先读 *-flowmap.json:meituan-flowmap / wechat-flowmap / neteasemusic-flowmap。老的坐标 profile(meituan-waimai-ios-mirror / wechat-ios-mirror / neteasemusic)是 flowmap 的坐标来源/说明书,仍可查。用法见各 flowmap 顶部 _what + README 的 Methodology 节。",
+  "_置信度_confidence": "★每条链路记 confidence:学过/演示过即默认『trusted』→ 有成品脚本就【代码级一条命令跑完,零截图、不唤起大模型逐步判断】,只看退出码;出错才降级『observing』回到睁眼模式。oneShotSuccesses=一次性成功累计(健康度,非准入门槛);失败清零+记 lastFailure。demonstratedBy:user 是最强信任(用户亲录,第一次就走脚本)。详见 SKILL.md『链路置信度』节。",
   "learned": [
     {
       "process": "NeteaseMusic",
@@ -27,6 +28,9 @@
       "coverage": ["搜联系人并发中文消息(全自动:cliclick真实Cmd+V粘贴+Return发送)"],
       "status": "实测全自动跑通",
       "needs": ["接力/Handoff 开", "cliclick", "iPhone 镜像已配好"],
+      "flows": [
+        { "name": "发消息", "script": "lib/wechat-send.sh <联系人> <消息>", "confidence": "trusted", "demonstratedBy": "user", "oneShotSuccesses": 1, "lastFailure": "2026-06-24 末行 echo 用 $NAME』 多字节贴变量名→unbound(但消息已发,仅cosmetic)。已改 ${NAME} 修复,修后 exit0 一次过。", "_note": "已演示+实测跑通→默认 trusted,直接跑脚本不截图。读对方消息内容那一步要截(内容相关,算输入采集)。" }
+      ],
       "lastVerified": "2026-06-19"
     },
     {
@@ -36,6 +40,10 @@
       "coverage": ["搜店进店", "选规格(份量/温度少冰/咖啡豆/奶/浓缩减份)", "加购+凑起送", "购物车删项", "结算用美团红包", "选餐具", "收银台选支付宝", "支付密码逐位点(脱敏)", "支付成功"],
       "status": "实测全自动跑通(¥56 真实下单成功)",
       "needs": ["接力/Handoff 开", "cliclick", "iPhone 镜像已配好", "支付密码用户给(不存)"],
+      "flows": [
+        { "name": "搜店", "script": "lib/meituan-search.sh <店名> [out.png]", "confidence": "trusted", "demonstratedBy": "user", "oneShotSuccesses": 0, "lastFailure": null },
+        { "name": "下单全链路", "script": "lib/meituan-order.sh", "confidence": "trusted", "demonstratedBy": "user", "oneShotSuccesses": 0, "lastFailure": null, "_note": "支付密码这步必停,由 agent 实时问用户逐位点入,密码不进脚本。" }
+      ],
       "notes": "含整条链路『内心figma』全键位图。2026-06-20b 复盘:全链路到密码盘坐标已校准(见 profile『复盘_2026-06-20b』),可一次规划跑内心链路、不逐步截图。5大陷阱:商品详情页大图预览死胡同/改规格生成新变体要删车/红包不自动抵扣/餐具弹窗别点保存(触发引导浮层)/收银台默认月付要手切支付宝。铁律:别目测缩略图定坐标(偏30-60px),信网格或用已校准表。",
       "lastVerified": "2026-06-20b"
     }
